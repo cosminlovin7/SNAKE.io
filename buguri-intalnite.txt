@@ -1,0 +1,64 @@
+1. Am incercat sa folosesc millis() pentru miscarea serpilor insa nu a functionat deoarece
+de fiecare data cand time_elapsed depasea valoarea de 1.000.000 => Seg fault si programul se bloca.
+Am rezolvat prin folosirea unui counter basic care se incrementeaza la fiecare loop si se face 0
+cand devine mai mare decat o constanta.
+2. FOARTE GREU DE IMPLEMENTAT LCD-ul, nu a mers pana nu am conectat totii pinii de pe display.
+Am incercat cu un tranzistor logic, mergea bine cateodata pana a picat de tot inainte cu 1 zi de prezentare :D.
+Am improvizat ceva cu rezistente de 1 kOhhm si acum pare ca merge.
+3. Randarea serpilor ineficienta. Eu teoretic calculez fiecare pozitie pentru fiecare cell din sarpe.
+Inainte, afisam sarpele cu setColor(WHITE), apoi pentru a sterge afisam din nou aceeasi pixeli dar cu
+setColor(BLACK), apoi afisam noua pozitia a sarpelui cu setColor(WHITE). Treaba asta la o dimensiune 
+mare a sarpelui facea ca sarpele sa blinkeze pe ecran. Am rezolvat prin faptul ca atunci cand 
+sarpele se misca practic singurele celule care isi modifica pozitia sunt PRIMA si ULTIMA, deci
+voi adauga mereu o celula in plus la inceput, si poi afisa/ascunde ultima daca sarpele mananca
+sau nu ceva.
+
+if (counter1 >= snake_time1) {
+    snake1_drawed = false;
+    move_snake(s1);
+    counter1 = 0;
+  }
+
+  if (counter2 >= snake_time2) {
+    snake2_drawed = false;
+    move_snake(s2);
+    counter2 = 0;
+  }
+
+  if (reward_counter >= 1000) {
+    generate_reward(&rewards);
+    reward_counter = 0;
+  }
+
+  if (!snake1_drawed) {
+    drawSnake2(s1, red1, green1, blue1);
+    snake1_drawed = true;
+  }
+
+  if (!snake2_drawed) {
+    drawSnake2(s2, red2, green2, blue2);
+    snake2_drawed = true;
+  }
+
+  stick1_info_x = analogRead(X1_pin);
+  stick1_info_y = analogRead(Y1_pin);
+
+  stick2_info_x = analogRead(X2_pin);
+  stick2_info_y = analogRead(Y2_pin);
+
+  check_snake_dir1(s1, stick1_info_x, stick1_info_y);
+  check_snake_dir2(s2, stick2_info_x, stick2_info_y);
+
+  list *current_reward = rewards;
+  ucg.setScale2x2();
+  while (current_reward != NULL) {
+    ucg.setColor(current_reward->r, current_reward->g, current_reward->b);
+    //ucg.setScale2x2();
+    drawPixel(current_reward->pos_x, current_reward->pos_y);
+
+    current_reward = current_reward->next;
+  }
+  ucg.undoScale();
+  counter1++;
+  counter2++;
+  reward_counter++;
